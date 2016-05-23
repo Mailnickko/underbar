@@ -371,6 +371,22 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    //in case there are multiple args
+    if (args !== undefined) {
+      var argsArr = Array.prototype.slice.call(arguments);
+      var funcArgs = argsArr.slice(2);
+    }
+
+    return _.map(collection, function(item) {
+      var method;
+      if (typeof functionOrKey === "function") {
+        method = functionOrKey;
+      } else {
+        method = item[functionOrKey];
+      }
+      return method.apply(item, funcArgs);
+    })
+    
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -378,6 +394,13 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    return collection.sort(function(a,b) {
+      if (typeof iterator === "function") {
+        return iterator(a) - iterator(b);
+      } else {
+        return a[iterator] - b[iterator];
+      }
+    });
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -386,6 +409,24 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    //find longest array
+    var argsArr = Array.prototype.slice.call(arguments);
+    var sorted = argsArr.sort(function(a,b) {
+      return b.length - a.length;
+    });
+    var longestArrLength = sorted[0].length;
+    console.log(longestArrLength);
+
+    var resultArr = [];
+    for (var i = 0; i < longestArrLength; i++) {
+      var indexArr = [];
+      for (var j = 0; j < sorted.length; j++) {
+        indexArr.push(argsArr[j][i]);
+      }
+      resultArr.push(indexArr);
+    }
+    console.log(resultArr);
+    return resultArr;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -393,16 +434,68 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    result = result === undefined ? [] : result;
+    console.log(result);
+    return _.reduce(nestedArray, function(result, item) {
+      if (Array.isArray(item)) {
+        _.flatten(item, result);
+      } else {
+        result.push(item);
+      }
+      return result;
+    }, result);
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    //TODO refactor to make more efficient
+    var argsArr = Array.prototype.slice.call(arguments);
+    var occurrences = {};
+    var result = [];
+    _.each(argsArr, function(item) {
+      _.each(item, function(element) {
+        if (!occurrences[element]) {
+        occurrences[element] = 1;
+      } else {
+        occurrences[element]++;
+      }
+      })
+    });
+    _.each(occurrences, function(item, index) {
+      if (occurrences[index] > 1) {
+        result.push(index);
+      }
+    })
+    return result;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    //TODO refactor to make more efficient
+      //TODO find out why compObj indexes were converted to String
+    var argsArr = Array.prototype.slice.call(arguments);
+    var compArr = argsArr[0];
+    var otherArrs = argsArr.slice(1);
+    var compObj = {};
+    var result =[];
+    _.each(compArr, function(item) {
+      compObj[item] = true;
+    });
+    _.each(otherArrs, function(item) {
+      _.each(item, function(element) {
+        if (compObj[element]) {
+          compObj[element] = false;
+        }
+      })
+    });
+    _.each(compObj, function(item, index) {
+      if (compObj[index] === true) {
+        result.push(+index);
+      }
+    })
+    return result;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
@@ -411,5 +504,6 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+    
   };
 }());
