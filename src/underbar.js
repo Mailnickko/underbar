@@ -200,9 +200,7 @@
         } else {
           return false;
         }
-      } else if (iterator === undefined && result !== true) {
-        return false;
-      } 
+      }
     }, true);
   };
 
@@ -210,13 +208,14 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    var defIterator = function(item) {
+      return Boolean(item);
+    }
+    iterator = iterator === undefined ? defIterator : iterator;
     var result = false;
+    
     _.each(collection, function(item) {
-      if (iterator !== undefined) {
-        if (iterator(item)) {
-          result = true;
-        }
-      } else if (iterator === undefined && item !== false) {
+      if (iterator(item)) {
         result = true;
       }
     });
